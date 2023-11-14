@@ -1,0 +1,50 @@
+#+TITLE:The Rational Programming Language
+* What is it?
+Rational is a Turing-complete Programming Language that is completely based on Rational Numbers.
+A program in Rational is just a single Rational number, represented in Hexadecimal.
+* An Example
+The Identity function in Rational is given by ~1A~ or ~1A.8C~
+* How does it work?
+There are two parts to any Rational program; the Natural part and the Fractional part.
+** Programs with just Natural Parts
+For programs with just Natural parts, such as ~1A~, the number is first converted to base 4.
+~1A (hexadecimal) = 011010 (binary) = 122 (base 4)~
+Now, as there is no Fractional part, we use the default evaluation method.
+The default evaluation maps ~1~ to ~S~, ~2~ to ~K~ and ~0~ to ~`~. ~3~ is mapped to nothing.
+~S~ and ~K~ are the S and K combinators, and ~`~ is the backquote operator from Unlambda.
+Note that any Rational program has an infinite number of ~`~ to the left for this reason, and that's by design.
+Thanks to this any list of combinators ~ABCDE...~ will be evaluated as ~...````ABCDE...~ hence ~((((A) B) C) D) E...~
+Putting it all together, we get ~1A = ...``SKK~
+And this evaluates to the identity function.
+/Complete/ evaluation of a Rational program requires one to find the smallest number that is computationally equally to ours.
+Hence, if we only consider Natural numbers, the Complete evaluation of ~1A~ will be ~19~
+Complete evaluation is not guaranteed to be possible in finite time.
+** Programs with Fractional Parts
+The most interesting part of Rational is programs with Fractional parts.
+Let us take ~1A.A3~ as our example.
+We first convert ~.A3~ to base 4.
+~.A3 (hexadecimal) = .10100011 (binary) = .2203 (base 4)~
+Now, we take the digits after the ~.~ and break them into a list of digit sequences delimited by zeroes
+~.2203 = (22, 3)~
+Note that there are an infinite number of empty sequences after ~22~ and ~3~. This is by design too.
+The last mapping was done to the 2nd sequence so we take our ~size~ as ~2 + 1 = 3~.
+The ~size~ is always the index of the last nonempty mapping plus 1.
+Now, for the Natural part, we first break it into chunks of size n such that 2^n is the smallest power of 2 greater than or equal to ~size~.
+This can be calculated with ~ceiling(log(size)/log(2))~
+Now, every chunk of binary digits is mapped to values as such:
+~0~ is mapped to ~`~, and other numbers are mapped to the list of sequences such that ~1~ = first entry in that list, ~2~ = second entry, etc.
+Hence, in our example ~1A = 011010 = 01 10 10 = 22 3 3~
+The sequences in the list are evaluated as follows:
+~1 = `~, ~2 = S~ and ~3 = K~. Hence our sequence becomes ~22 3 3 = SS K K = SSKK~.
+Hence, ~1A.A3 = ...```SSKK~.
+* Why Rational is interesting
+Rational offers a unique perspective on programs as numbers and computation as a mapping of rational numbers to other rational numbers.
+There is an interesting exercise that can be done with Rational, which is trying to find the smallest Rational number that equates to a given program.
+
+* Using the Transpiler
+You will need Guile Scheme to run the Transpiler.
+The Transpiler takes in a Rational program and outputs an equivalent Unlambda expression.
+#+BEGIN_SRC bash
+./rational.scm "1A.A3"
+```SSKK
+#+END_SRC
